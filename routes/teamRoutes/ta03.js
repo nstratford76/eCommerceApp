@@ -1,14 +1,18 @@
 //TA03 PLACEHOLDER
 const express = require('express');
 const router = express.Router();
+var jsonEngine = require('../../controllers/w03/team-jsonEngine.js');
 
-router.get('/',(req, res, next) => {
-    res.render('pages/ta03', { 
-        title: 'Team Activity 03', 
-        path: '/ta03', // For pug, EJS 
-        activeTA03: true, // For HBS
-        contentCSS: true, // For HBS
-    });
-});
+router.get('/', jsonEngine.processJson)
+      .post('/', (req, res, next) => {
+          let searchedValue = req.body.searchValue  
+          let filteredData = global.jsonResponse.filter(x => x.name.toLowerCase().includes(searchedValues.toLowerCase()))
+          res.render('pages/teamActivities/ta03', { 
+            title: 'JSON Search', 
+            data: filteredData,
+            path: '/ta03', // For pug, EJS 
+            searchedValue: searchedValue
+        });
+      }) 
 
 module.exports = router;
