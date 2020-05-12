@@ -25,10 +25,13 @@ const ta03Routes = require('./routes/teamRoutes/ta03');
 const ta04Routes = require('./routes/teamRoutes/ta04'); 
 
 
-const prove01Routes = require('./routes/proves/prove01');
-const prove02Routes = require('./routes/proves/prove02');
-const prove03Routes = require('./routes/proves/prove03'); 
-const prove04Routes = require('./routes/proves/prove04'); 
+const prove01 = require('./routes/proveRoutes/prove01/prove01');
+const prove02 = require('./routes/proveRoutes/prove02/prove02');
+const prove03 = require('./routes/proveRoutes/prove03/prove03'); 
+const prove04 = require('./routes/proveRoutes/prove04'); 
+
+const controllers = require('./controllers/w03/team-jsonEngine');
+
 
 app.use(express.static(path.join(__dirname, 'public')))
    .set('views', path.join(__dirname, 'views'))
@@ -45,10 +48,10 @@ app.use(express.static(path.join(__dirname, 'public')))
    .use('/ta04', ta04Routes)
 
 
-   .use('/prove01', prove01Routes)
-   .use('/prove02', prove02Routes) 
-   .use('/prove03', prove03Routes) 
-   .use('/prove04', prove04Routes)
+   .use('/prove01', prove01)
+   .use('/prove02', prove02) 
+   .use('/prove03', prove03) 
+   .use('/prove04', prove04)
    .get('/', (req, res, next) => {
      // This is the primary index, always handled last. 
      res.render('pages/index', {title: 'Welcome to my CSE341 repo', path: '/'});

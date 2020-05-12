@@ -5,8 +5,8 @@ routes
         .use('03', require('./ta03'))
         .use('04', require('./ta04'))
         .get('/', (req, res, next) =>{
-            res.render('pages/team_activities/', {
+            res.render('pages/teamActivities/', {
                 pageTitle: "Team Activities",
-                path: "/team_activities"});
+                path: "/teamActivities"});
         });
 modules.exports = routes;
