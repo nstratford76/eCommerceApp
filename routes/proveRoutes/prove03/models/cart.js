@@ -67,7 +67,7 @@ module.exports = class Cart {
         fs.readFile(p, (err, fileContent) => {
             const cart = JSON.parse(fileContent);
             if (err) {
-                callaback(null);
+                callback(null);
             } else {
                 callback(cart);
             }

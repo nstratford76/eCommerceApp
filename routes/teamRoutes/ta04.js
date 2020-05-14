@@ -2,6 +2,8 @@
 const express = require('express');
 const router = express.Router();
 
+const style = require('express-session');
+const counter = require('express-session')
 router.get('/',(req, res, next) => {
     res.render('pages/ta04', { 
         title: 'Team Activity 04', 
