@@ -11,13 +11,23 @@
  * IMPORTANT: Make sure to run "npm install" in your root before "npm start"
  *******************************************************************************/
 // Our initial setup (package requires, port number setup)
-const express = require('express');
-const bodyParser = require('body-parser');
 const path = require('path');
-const PORT = process.env.PORT || 5000 // So we can run on heroku || (OR) localhost:5000
-
-
+const express = require('express');
 const app = express();
+const bodyParser = require('body-parser');
+
+const PORT = process.env.PORT || 5000; // So we can run on heroku || (OR) localhost:5000
+const cors = require('cors'); 
+const User = require('./models/user');
+const mongoose = require('mongoose');
+const corsOptions = {
+  origin: "https://prove-02.herokuapp.com/",
+  optionsSuccessStatus: 200
+};
+const MONGODB_URL = process.env.MONGODB_URL || "mongodb+srv://nstratford_test:Brandnewrules76@cluster0-hi2mo.mongodb.net/shop?retryWrites=true&w=majority";
+  
+
+
 
 // Route setup. You can implement more in the future!
 const ta01Routes = require('./routes/teamRoutes/ta01');
@@ -29,10 +39,24 @@ const ta04Routes = require('./routes/teamRoutes/ta04');
 const prove01 = require('./routes/proveRoutes/prove01/prove01');
 const prove02 = require('./routes/proveRoutes/prove02/prove02');
 const prove03 = require('./routes/proveRoutes/prove03/prove03'); 
-const prove04 = require('./routes/proveRoutes/prove04'); 
+const prove04 = require('./routes/proveRoutes/prove04/routes/shop'); 
 
-const controllers = require('./controllers/w03/team-jsonEngine');
+//const controllers = require('./controllers/w03/team-jsonEngine');
+const adminRoutes = require('./routes/proveRoutes/prove04/routes/admin');
+const shopRoutes = require('./routes/proveRoutes/prove04/routes/shop');
+// app.use((req, res, next) => {
+  
+// });
 
+app.use((req, res, next) => {
+  User.findById('5ec459b58eb7961d84742737')
+    .then(user => {
+      req.user = user;
+      console.log("This is the user info: " + req.user);
+      next();
+    })
+    .catch(err => console.log(err));
+});
 
 app.use(express.static(path.join(__dirname, 'public')))
    .set('views', path.join(__dirname, 'views'))
@@ -45,7 +69,7 @@ app.use(express.static(path.join(__dirname, 'public')))
    .use(bodyParser({extended: false})) // For parsing the body of a POST
    .use('/ta01', ta01Routes)
    .use('/ta02', ta02Routes) 
-   .use('/ta03', ta03Routes) 
+   //.use('/ta03', ta03Routes) 
    .use('/ta04', ta04Routes)
 
 
@@ -53,6 +77,17 @@ app.use(express.static(path.join(__dirname, 'public')))
    .use('/prove02', prove02) 
    .use('/prove03', prove03) 
    .use('/prove04', prove04)
+   .use('/admin', adminRoutes)
+   .use(shopRoutes)
+  //  .use((req, res, next) => {
+
+  //     User.findById('5ec459b58eb7961d84742737')
+  //     .then(user => {
+  //       req.user = user;
+  //       next();
+  //     })
+  //     .catch(err => console.log(err));
+  //    })
    .get('/', (req, res, next) => {
      // This is the primary index, always handled last. 
      res.render('pages/index', {title: 'Welcome to my CSE341 repo', path: '/'});
@@ -61,4 +96,44 @@ app.use(express.static(path.join(__dirname, 'public')))
      // 404 page
      res.render('pages/404', {title: '404 - Page Not Found', path: req.url})
    })
-   .listen(PORT, () => console.log(`Listening on ${ PORT }`));
+
+   
+  app.use(cors(corsOptions));
+  
+  const options = {
+    useUnifiedTopology: true,
+    useNewUrlParser: true,
+    useCreateIndex: true,
+    useFindAndModify: false,
+    family: 4
+  };
+
+ 
+
+  
+  
+  mongoose
+    .connect(
+      MONGODB_URL, options
+    )
+    .then(result => {
+      // This should be your user handling code implement following the course videos
+      User.findOne().then(user => {
+        if (!user) {
+          const user = new User({
+            name: 'Nathan',
+            email: 'nathan@test.com',
+            cart: {
+              items: []
+            }
+          });
+          user.save();
+        }
+      });
+      app.listen(PORT);
+    })
+    .catch(err => {
+      console.log(err);
+    });
+
+   
