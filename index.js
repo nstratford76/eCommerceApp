@@ -14,17 +14,38 @@
 const path = require('path');
 const express = require('express');
 const app = express();
+const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const session = require('express-session');
+const options = {
+  useUnifiedTopology: true,
+  useNewUrlParser: true,
+  useCreateIndex: true,
+  useFindAndModify: false,
+  family: 4
+};
+
+const MongoDBStore = require('connect-mongodb-session')(session);
+const csrf = require('csurf');
+const flash = require('connect-flash');
+const MONGODB_URL = process.env.MONGODB_URL || "mongodb+srv://nstratford_test:Brandnewrules76@cluster0-hi2mo.mongodb.net/shop";
+const store = new MongoDBStore({
+  url: MONGODB_URL,
+  collection: 'sessions'
+});
+
+
+
 
 const PORT = process.env.PORT || 5000; // So we can run on heroku || (OR) localhost:5000
 const cors = require('cors'); 
 const User = require('./models/user');
-const mongoose = require('mongoose');
+const csrfProtection = csrf();
 const corsOptions = {
   origin: "https://prove-02.herokuapp.com/",
   optionsSuccessStatus: 200
 };
-const MONGODB_URL = process.env.MONGODB_URL || "mongodb+srv://nstratford_test:Brandnewrules76@cluster0-hi2mo.mongodb.net/shop?retryWrites=true&w=majority";
+
   
 
 
@@ -39,26 +60,61 @@ const ta04Routes = require('./routes/teamRoutes/ta04');
 const prove01 = require('./routes/proveRoutes/prove01/prove01');
 const prove02 = require('./routes/proveRoutes/prove02/prove02');
 const prove03 = require('./routes/proveRoutes/prove03/prove03'); 
-const prove04 = require('./routes/proveRoutes/prove04/routes/shop'); 
+const prove04 = require('./routes/proveRoutes/prove04/shop'); 
 
 //const controllers = require('./controllers/w03/team-jsonEngine');
-const adminRoutes = require('./routes/proveRoutes/prove04/routes/admin');
-const shopRoutes = require('./routes/proveRoutes/prove04/routes/shop');
+const adminRoutes = require('./routes/proveRoutes/prove04/admin');
+const shopRoutes = require('./routes/proveRoutes/prove04/shop');
+const authRoutes = require('./routes/proveRoutes/prove04/auth')
 // app.use((req, res, next) => {
   
 // });
 
+
+app.use(
+  session({
+    secret: 'my secret', 
+    resave: false, 
+    saveUninitialized: false,
+    store: store
+   })
+ );
+
+ app.use(csrfProtection);
+app.use(flash());
+
 app.use((req, res, next) => {
-  User.findById('5ec459b58eb7961d84742737')
+  if (!req.session.user) {
+    return next();
+  }
+  User.findById(req.session.user._id)
     .then(user => {
       req.user = user;
-      console.log("This is the user info: " + req.user);
       next();
     })
     .catch(err => console.log(err));
 });
 
+app.use((req, res, next) => {
+  res.locals.isAuthenticated = req.session.isLoggedIn;
+  res.locals.csrfToken = req.csrfToken();
+  next();
+});
+
+// app.use((req, res, next) => {
+//   User.findById('5ec459b58eb7961d84742737')
+//     .then(user => {
+//       req.user = user;
+//       console.log("This is the user info: " + req.user);
+//       next();
+//     })
+//     .catch(err => console.log(err));
+// });
+
+
+
 app.use(express.static(path.join(__dirname, 'public')))
+   .use(bodyParser({extended: false}))
    .set('views', path.join(__dirname, 'views'))
    .set('view engine', 'ejs')
    // For view engine as Pug
@@ -66,7 +122,7 @@ app.use(express.static(path.join(__dirname, 'public')))
    // For view engine as hbs (Handlebars)
    //.engine('hbs', expressHbs({layoutsDir: 'views/layouts/', defaultLayout: 'main-layout', extname: 'hbs'})) // For handlebars
    //.set('view engine', 'hbs')
-   .use(bodyParser({extended: false})) // For parsing the body of a POST
+    // For parsing the body of a POST
    .use('/ta01', ta01Routes)
    .use('/ta02', ta02Routes) 
    //.use('/ta03', ta03Routes) 
@@ -79,6 +135,8 @@ app.use(express.static(path.join(__dirname, 'public')))
    .use('/prove04', prove04)
    .use('/admin', adminRoutes)
    .use(shopRoutes)
+   .use(authRoutes)
+   
   //  .use((req, res, next) => {
 
   //     User.findById('5ec459b58eb7961d84742737')
@@ -98,16 +156,9 @@ app.use(express.static(path.join(__dirname, 'public')))
    })
 
    
+   
   app.use(cors(corsOptions));
   
-  const options = {
-    useUnifiedTopology: true,
-    useNewUrlParser: true,
-    useCreateIndex: true,
-    useFindAndModify: false,
-    family: 4
-  };
-
  
 
   
@@ -118,18 +169,18 @@ app.use(express.static(path.join(__dirname, 'public')))
     )
     .then(result => {
       // This should be your user handling code implement following the course videos
-      User.findOne().then(user => {
-        if (!user) {
-          const user = new User({
-            name: 'Nathan',
-            email: 'nathan@test.com',
-            cart: {
-              items: []
-            }
-          });
-          user.save();
-        }
-      });
+      // User.findOne().then(user => {
+      //   if (!user) {
+      //     const user = new User({
+      //       name: 'Nathan',
+      //       email: 'nathan@test.com',
+      //       cart: {
+      //         items: []
+      //       }
+      //     });
+      //     user.save();
+      //   }
+      // });
       app.listen(PORT);
     })
     .catch(err => {
