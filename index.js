@@ -17,6 +17,7 @@ const app = express();
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const session = require('express-session');
+
 const PORT = process.env.PORT || 5000; // So we can run on heroku || (OR) localhost:5000
 const options = {
   useUnifiedTopology: true,
@@ -26,14 +27,15 @@ const options = {
   family: 4
 };
 
-// const MongoDBStore = require('connect-mongodb-session')(session);
+const MongoDBStore = require('connect-mongodb-session')(session);
 // const csrf = require('csurf');
 // const flash = require('connect-flash');
 const MONGODB_URL = process.env.MONGODB_URL || "mongodb+srv://nstratford_test:CHjVcsACjvJVoPkl@cluster0-hi2mo.mongodb.net/shop?retryWrites=true&w=majority";
 // const store = new MongoDBStore({
-//   url: MONGODB_URL,
-//   collection: 'sessions'
-// });
+//    url: MONGODB_URL,
+//    collection: 'sessions'
+//  });
+
 
 
 
@@ -66,20 +68,20 @@ const prove04 = require('./routes/proveRoutes/prove04/shop');
 //const controllers = require('./controllers/w03/team-jsonEngine');
 const adminRoutes = require('./routes/proveRoutes/prove04/admin');
 const shopRoutes = require('./routes/proveRoutes/prove04/shop');
-//const authRoutes = require('./routes/proveRoutes/prove04/auth')
+const authRoutes = require('./routes/proveRoutes/prove04/auth')
 // app.use((req, res, next) => {
   
 // });
 
 
-// app.use(
-//   session({
-//     secret: 'my secret', 
-//     resave: false, 
-//     saveUninitialized: false,
-//     store: store
-//    })
-//  );
+app.use(
+  session({
+    secret: 'my secret', 
+    resave: false, 
+    saveUninitialized: false,
+    //store: store
+   })
+ );
 
 //  app.use(csrfProtection);
 // app.use(flash());
@@ -136,7 +138,7 @@ app.use(express.static(path.join(__dirname, 'public')))
    .use('/prove04', prove04)
    .use('/admin', adminRoutes)
    .use(shopRoutes)
-   //.use(authRoutes)
+   .use(authRoutes)
    
   //  .use((req, res, next) => {
 
